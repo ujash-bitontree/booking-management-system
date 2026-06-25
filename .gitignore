@@ -1,43 +1,31 @@
 # Node / Nest
-node_modules/
-dist/
-build/
+**/node_modules/
+**/dist/
+**/build/
+
+# Next.js
 .next/
 out/
 
 # Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-logs/
 *.log
+logs/
 
-# Env files
+# Environment
 .env
 .env.*
 !.env.example
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# VSCode
-.vscode/
-*.code-workspace
-
-# JetBrains
-.idea/
-
 # TypeScript
 *.tsbuildinfo
-
-# Coverage
-coverage/
-
-# Docker
-*.env.local
-
-# Misc
-*.swp
-*.swo
-
