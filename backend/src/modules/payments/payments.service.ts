@@ -210,12 +210,24 @@ export class PaymentsService {
       await manager.save(payment);
       await manager.save(appointment);
 
+      // Deduct from patient's wallet
+      const patientToDeduct = await manager.findOne(PatientProfile, {
+        where: { id: appointment.patientId }
+      }as any);
+      if (patientToDeduct && patientToDeduct.walletBalance > 0) {
+        const deductionAmount = Math.min(payment.amount, patientToDeduct.walletBalance);
+        patientToDeduct.walletBalance -= deductionAmount;
+        await manager.save(patientToDeduct);
+        console.log(`Deducted ${deductionAmount} from patient wallet: ${appointment.patientId}`);
+      }
+
       const otherPendingAppointments = await manager.find(Appointment, {
         where: {
           slotId: appointment.slotId,
           status: AppointmentStatus.PENDING_PAYMENT
         }
       });
+      console.log(otherPendingAppointments, 'Other pending appointments <<<<<');
 
       for (const otherAppointment of otherPendingAppointments) {
         if (otherAppointment.id === appointment.id) {
@@ -226,11 +238,46 @@ export class PaymentsService {
         await manager.save(otherAppointment);
 
         if (otherAppointment.paymentId) {
-          await manager.update(
-            Payment,
-            { appointmentId: otherAppointment.id },
-            { status: PaymentStatus.CANCELLED, rawStripePayload: event as unknown as Record<string, unknown> } as any
-          );
+          const otherPayment = await manager.findOne(Payment, {
+            where: { id: otherAppointment.paymentId }
+          }as any);
+
+          console.log(otherPayment, 'Other payment data here <<<<<');
+          console.log(otherPayment?.status, 'Other payment status <<<<<<')
+          if (otherPayment?.status === PaymentStatus.SUCCEEDED && otherPayment.stripePaymentIntentId) {
+            // Process refund synchronously so Stripe shows it as "refunded" immediately
+            try {
+              await this.stripeService.stripe.refunds.create({
+                payment_intent: otherPayment.stripePaymentIntentId,
+                reason: 'requested_by_customer'
+              });
+              otherPayment.status = PaymentStatus.REFUNDED;
+              await manager.save(otherPayment);
+
+              // Credit refund to patient's wallet
+              const refundPatient = await manager.findOne(PatientProfile, {
+                where: { id: otherAppointment.patientId }
+              }as any);
+              if (refundPatient) {
+                refundPatient.walletBalance = (refundPatient.walletBalance || 0) + otherPayment.amount;
+                await manager.save(refundPatient);
+              }
+              console.log(`Processed refund for duplicate payment: ${otherPayment.id}`);
+            } catch (refundError) {
+              console.error('Refund failed:', refundError);
+              await manager.update(
+                Payment,
+                { appointmentId: otherAppointment.id },
+                { status: PaymentStatus.CANCELLED, rawStripePayload: event as unknown as Record<string, unknown> } as any
+              );
+            }
+          } else {
+            await manager.update(
+              Payment,
+              { appointmentId: otherAppointment.id },
+              { status: PaymentStatus.CANCELLED, rawStripePayload: event as unknown as Record<string, unknown> } as any
+            );
+          }
         }
       }
 

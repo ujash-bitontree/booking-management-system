@@ -13,7 +13,7 @@ export class SlotsController {
 
   @Post()
   @Roles(Role.DOCTOR)
-  create(@Req() request: Request & { user: { sub: string } }, @Body() dto: CreateSlotDto) {
+  create(@Req() request: Request & { user: { sub: string; role?: string } }, @Body() dto: CreateSlotDto) {
     return this.slotsService.createDoctorSlot(request.user.sub, dto);
   }
 
@@ -30,12 +30,14 @@ export class SlotsController {
     @Param('id') slotId: string,
     @Body() dto: UpdateSlotDto
   ) {
+    console.log('UPDATE SLOT - User:', request.user, 'SlotId:', slotId, 'DTO:', dto);
     return this.slotsService.updateDoctorSlot(request.user.sub, slotId, dto);
   }
 
   @Delete(':id')
   @Roles(Role.DOCTOR)
   remove(@Req() request: Request & { user: { sub: string } }, @Param('id') slotId: string) {
+    console.log('DELETE SLOT - User:', request.user, 'SlotId:', slotId);
     return this.slotsService.deleteDoctorSlot(request.user.sub, slotId);
   }
 

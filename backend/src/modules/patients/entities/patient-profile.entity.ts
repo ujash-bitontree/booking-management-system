@@ -16,4 +16,7 @@ export class PatientProfile extends BaseEntityModel {
 
   @Column({ type: 'varchar', length: 20, nullable: true })
   phoneNumber!: string | null;
+
+  @Column({ type: 'int', default: 0 })
+  walletBalance!: number;
 }

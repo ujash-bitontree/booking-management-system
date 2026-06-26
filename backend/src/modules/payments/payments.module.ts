@@ -8,7 +8,10 @@ import { Appointment } from '../appointments/entities/appointment.entity';
 import { PatientProfile } from '../patients/entities/patient-profile.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Payment, Appointment, PatientProfile]), StripeModule],
+  imports: [
+    TypeOrmModule.forFeature([Payment, Appointment, PatientProfile]),
+    StripeModule,
+  ],
   controllers: [PaymentsController],
   providers: [PaymentsService],
   exports: [PaymentsService, TypeOrmModule]

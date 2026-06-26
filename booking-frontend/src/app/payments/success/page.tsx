@@ -34,7 +34,14 @@ function PaymentSuccessContent() {
         );
 
         if (confirmedAppointment) {
-          setAppointment(confirmedAppointment);
+          // Check payment status - only show success if SUCCEEDED or COMPLETED
+          const paymentStatus = confirmedAppointment.payment?.status;
+          const appointmentStatus = confirmedAppointment.status;
+          if (paymentStatus === 'SUCCEEDED' && appointmentStatus !== 'CANCELLED') {
+            setAppointment(confirmedAppointment);
+          } else {
+            setError(`Payment status: ${paymentStatus?.replace('_', ' ')} - Appointment was cancelled`);
+          }
         } else {
           setError('Appointment not found');
         }

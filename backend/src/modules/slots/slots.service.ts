@@ -22,6 +22,11 @@ export class SlotsService {
 
   async createDoctorSlot(userId: string, dto: CreateSlotDto) {
     const doctor = await this.findDoctorByUserId(userId);
+
+    if (!doctor) {
+      console.error('Doctor not found for userId:', userId);
+    }
+
     const slot: any = this.slotsRepository.create({
       doctorId: doctor.id,
       startTime: new Date(dto.startTime),
@@ -33,8 +38,11 @@ export class SlotsService {
     this.validateTimeRange(slot.startTime, slot.endTime);
 
     try {
-      return await this.slotsRepository.save(slot);
-    } catch {
+      const savedSlot = await this.slotsRepository.save(slot);
+      console.log('Slot saved successfully:', savedSlot.id);
+      return savedSlot;
+    } catch (error) {
+      console.error('Error saving slot:', error);
       throw new ConflictException('Slot already exists for the selected time range');
     }
   }
@@ -106,8 +114,11 @@ export class SlotsService {
   }
 
   private async findDoctorByUserId(userId: string): Promise<DoctorProfile> {
+    // Convert string userId from JWT to number for the database query
+    const userIdNum = Number(userId);
+
     const doctor = await this.doctorProfilesRepository.findOne({
-      where: { userId }
+      where: { userId: userIdNum }
     }as any);
 
     if (!doctor) {

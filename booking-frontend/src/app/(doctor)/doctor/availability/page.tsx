@@ -47,26 +47,31 @@ export default function DoctorAvailabilityPage() {
 
   useEffect(() => {
     if (user) {
-      getDoctorSlots(user.id);
+      getDoctorSlots();
     }
   }, [user, getDoctorSlots]);
 
   const onSubmit = async (data: SlotFormData) => {
-    if (!user) return;
+    if (!user) {
+      console.error('No user found');
+      return;
+    }
+
+    console.log('Form data submitted:', data);
+    console.log('Is editing:', !!editingSlot);
 
     try {
       if (editingSlot) {
+        console.log('Updating slot with id:', editingSlot.id);
         await updateSlot(editingSlot.id, data);
       } else {
-        await createSlot({
-          ...data,
-          doctorId: Number(user.id),
-        }as any);
+        console.log('Creating new slot');
+        await createSlot(data);
       }
       setIsDialogOpen(false);
       reset();
       setEditingSlot(null);
-      getDoctorSlots(user.id);
+      getDoctorSlots();
     } catch (error) {
       console.error('Failed to save slot:', error);
     }
@@ -74,7 +79,7 @@ export default function DoctorAvailabilityPage() {
 
   const handleDelete = async (slotId: string) => {
     await deleteSlot(slotId);
-    getDoctorSlots(user.id);
+    getDoctorSlots();
   };
 
   const handleEdit = (slot: any) => {
@@ -110,11 +115,9 @@ export default function DoctorAvailabilityPage() {
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             if (!open) handleCancelEdit();
           }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add Slot
-              </Button>
-            </DialogTrigger>
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Add Slot
+            </Button>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{editingSlot ? 'Edit Slot' : 'Add New Slot'}</DialogTitle>

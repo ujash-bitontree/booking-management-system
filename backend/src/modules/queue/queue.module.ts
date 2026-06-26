@@ -11,8 +11,8 @@ import { PaymentReconciliationProcessor } from './processors/payment-reconciliat
 import { StripeWebhookProcessor } from './processors/stripe-webhook.processor';
 import { WebhookEvent } from '../webhook/entities/webhook-event.entity';
 import { StripeModule } from '../../infrastructure/stripe/stripe.module';
-import { PaymentsModule } from '../payments/payments.module';
 import { Payment } from '../payments/entities/payment.entity';
+import { PaymentsModule } from '../payments/payments.module';
 
 @Module({
   imports: [
@@ -25,7 +25,11 @@ import { Payment } from '../payments/entities/payment.entity';
       { name: STRIPE_WEBHOOK_QUEUE }
     )
   ],
-  providers: [BookingExpirationProcessor, PaymentReconciliationProcessor, StripeWebhookProcessor],
+  providers: [
+    BookingExpirationProcessor,
+    PaymentReconciliationProcessor,
+    StripeWebhookProcessor
+  ],
   exports: [BullModule],
 })
 export class QueueModule {}
