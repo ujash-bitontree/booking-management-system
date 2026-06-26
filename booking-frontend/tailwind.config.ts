@@ -18,6 +18,8 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          light: 'hsl(var(--primary-light))',
+          dark: 'hsl(var(--primary-dark))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -43,11 +45,30 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        // Healthcare semantic colors
+        success: {
+          DEFAULT: 'hsl(var(--success, 160 60% 45%))',
+          foreground: 'hsl(var(--success-foreground, 0 0% 100%))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning, 45 90% 50%))',
+          foreground: 'hsl(var(--warning-foreground, 0 0% 100%))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info, 210 100% 50%))',
+          foreground: 'hsl(var(--info-foreground, 0 0% 100%))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+        'card': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+        'card-hover': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        'dialog': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
       },
     },
   },

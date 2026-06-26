@@ -43,12 +43,24 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response) {
-      const { status, data } = error.response;
+      const { status, data, config } = error.response;
+      const url = config?.url || '';
+
+      // Skip redirect for login/register endpoints (handle auth errors gracefully)
+      const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/register');
 
       if (status === 401) {
-        clearAuth();
-        window.location.href = '/login';
-        toast.error('Session expired. Please login again.');
+        if (!isAuthEndpoint) {
+          // Only redirect for session expiry on protected routes
+          clearAuth();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+          }
+          toast.error('Session expired. Please login again.');
+        } else {
+          // For login/register, just show error without redirect
+          toast.error(getErrorMessage(data));
+        }
         return Promise.reject(error);
       }
 

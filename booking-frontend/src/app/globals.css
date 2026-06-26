@@ -3,20 +3,45 @@
 @tailwind utilities;
 
 :root {
+  --primary: 210 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --primary-light: 210 100% 97%;
+  --primary-dark: 210 100% 40%;
+
+  --secondary: 160 60% 45%;
+  --secondary-foreground: 0 0% 100%;
+
+  --accent: 180 70% 45%;
+  --accent-foreground: 0 0% 100%;
+
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+
+  --ring: 210 100% 50%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
   color-scheme: light;
-  --foreground-rgb: 15, 23, 42;
-  --background-rgb: 248, 250, 252;
 }
 
 body {
   min-height: 100vh;
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(135deg, #f8fbff 0%, #eef7ff 45%, #f8fafc 100%);
-  font-feature-settings: 'rlig' 1, 'calt' 1;
-}
-
-* {
-  box-sizing: border-box;
+  color: hsl(222 47% 11%);
+  background: linear-gradient(135deg, hsl(210 40% 98%) 0%, hsl(210 40% 96%) 100%);
+  font-feature-settings: rlig 1, calt 1;
 }
 
 ::selection {
@@ -56,7 +81,7 @@ body {
 }
 
 * {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
