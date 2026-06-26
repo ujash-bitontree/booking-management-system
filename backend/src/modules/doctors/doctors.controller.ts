@@ -23,17 +23,18 @@ export class DoctorsController {
     return this.doctorsService.listPublicDoctors(query);
   }
 
+  @Get('me')
+  @Roles(Role.DOCTOR)
+  getMe(@Req() request: Request & { user: { sub: string } }) {
+    return this.doctorsService.getMyProfile(request.user.sub);
+  }
+
   @Get(':id')
   @Public()
   getDoctor(@Param('id') doctorId: string) {
     return this.doctorsService.getPublicDoctor(doctorId);
   }
 
-  @Get('me')
-  @Roles(Role.DOCTOR)
-  getMe(@Req() request: Request & { user: { sub: string } }) {
-    return this.doctorsService.getMyProfile(request.user.sub);
-  }
 
   @Patch('me')
   @Roles(Role.DOCTOR)

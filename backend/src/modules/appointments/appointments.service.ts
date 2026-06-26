@@ -23,7 +23,8 @@ export class AppointmentsService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
-    @InjectQueue(BOOKING_EXPIRATION_QUEUE) private readonly bookingExpirationQueue: Queue
+    @InjectQueue(BOOKING_EXPIRATION_QUEUE) 
+    private readonly bookingExpirationQueue: Queue
   ) { }
 
   async createPendingAppointment(patientId: string, dto: CreateAppointmentDto): Promise<Appointment> {
@@ -59,12 +60,15 @@ export class AppointmentsService {
       //   throw new BadRequestException('Scheduled time does not match the slot');
       // }
 
-      const confirmedAppointment = await manager.findOne(Appointment, {
-        where: { slotId: slot.id, status: AppointmentStatus.CONFIRMED },
+      const existingBookedAppointment = await manager.findOne(Appointment, {
+        where: [
+          { slotId: slot.id, status: AppointmentStatus.CONFIRMED },
+          { slotId: slot.id, status: AppointmentStatus.COMPLETED }
+        ],
         lock: { mode: 'pessimistic_read' }
       } as any);
 
-      if (confirmedAppointment) {
+      if (existingBookedAppointment) {
         throw new ConflictException('Slot has already been booked');
       }
 
@@ -120,7 +124,7 @@ export class AppointmentsService {
       appointment.expiresAt ? appointment.expiresAt.getTime() - Date.now() : 0
     );
 
-    await this.bookingExpirationQueue.add(
+    const addToexpiredBQueue = await this.bookingExpirationQueue.add(
       'expire-appointment',
       { appointmentId: appointment.id },
       {
@@ -129,7 +133,7 @@ export class AppointmentsService {
         removeOnFail: false
       }
     );
-
+    console.log(addToexpiredBQueue, 'Added to booking expiration queue <<<<<');
     return appointment;
   }
 

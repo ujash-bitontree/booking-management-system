@@ -37,6 +37,7 @@ export class AuthController {
 
   @Get('me')
   getMe(@Req() request: Request & { user: { sub: string } }) {
+    console.log(request.user.sub, 'User ID <<<<');
     return this.authService.getMe(request.user.sub);
   }
 

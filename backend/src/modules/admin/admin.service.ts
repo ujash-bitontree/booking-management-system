@@ -42,7 +42,11 @@ export class AdminService {
       users,
       doctors,
       patients,
-      appointments
+      appointments,
+      totalDoctors: doctors,
+      totalPatients: patients,
+      totalAppointments: appointments,
+      totalRevenue: 0
     };
   }
 

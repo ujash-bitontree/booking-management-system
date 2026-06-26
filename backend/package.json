@@ -23,6 +23,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.4.0",
     "@nestjs/typeorm": "^10.0.2",
+    "@stripe/cli": "^1.43.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.14.0",

@@ -34,7 +34,7 @@ export class PaymentsService {
     @InjectRepository(Appointment)
     private readonly appointmentsRepository: Repository<Appointment>,
     @InjectRepository(PatientProfile)
-        private readonly patientProfilesRepository: Repository<PatientProfile>,
+    private readonly patientProfilesRepository: Repository<PatientProfile>,
     private readonly dataSource: DataSource,
     private readonly stripeService: StripeService,
     private readonly configService: ConfigService
@@ -54,11 +54,12 @@ export class PaymentsService {
 
     const appointment = await this.appointmentsRepository.findOne({
       where: {
-        id: Number(appointmentId),
+        id: appointmentId,
         patientId: patientProfile.id,
       },
+
       relations: ['payment', 'doctor'],
-    }as any);
+    } as any);
 
     console.log(appointment, 'APPOINTMENT DATA HERE <<<<');
 
@@ -78,6 +79,7 @@ export class PaymentsService {
       ? appointment.payment
       : await this.paymentsRepository.findOne({ where: { appointmentId } as any });
 
+    console.log(payment, 'Payment data here <<<<');
     if (!payment) {
       throw new NotFoundException('Payment record not found');
     }
@@ -102,7 +104,7 @@ export class PaymentsService {
 
     const frontendUrl = this.configService.getOrThrow<string>('frontend.url');
     console.log(frontendUrl, 'FRONTEND URL HERE <<<<<<<');
-  
+
     const checkoutSession = await this.stripeService.stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [
@@ -129,10 +131,11 @@ export class PaymentsService {
     });
 
     console.log(checkoutSession, 'checkoutSession :::::');
-    
+
     payment.stripeCheckoutSessionId = checkoutSession.id;
     payment.rawStripePayload = checkoutSession as unknown as Record<string, unknown>;
     payment.status = PaymentStatus.INITIATED;
+    // payment.status = PaymentStatus.SUCCEEDED; // Set status to COMPLETED when checkout session is created
     await this.paymentsRepository.save(payment);
 
     return {
@@ -143,20 +146,33 @@ export class PaymentsService {
   }
 
   async handleStripeCheckoutCompleted(event: StripeCheckoutCompletedEvent) {
-    const checkoutSession = event.data.object;
-    const appointmentId = checkoutSession.metadata?.appointmentId;
-    const paymentId = checkoutSession.metadata?.paymentId;
+    console.log(event, 'STRIPE EVENT <<<<<<<<<<')
+    console.log("Inside handle Stripe Checkout complete >>>>>>>>");
+    const checkoutSession = event?.data?.object;
+    console.log(event?.data, 'event data')
+    console.log(checkoutSession, 'Checkout session data here <<<<<');
+    const appointmentId = checkoutSession?.metadata?.appointmentId;
+    const paymentId = checkoutSession?.metadata?.paymentId;
 
     if (!appointmentId || !paymentId) {
       throw new BadRequestException('Stripe event is missing appointment metadata');
     }
 
     return this.dataSource.transaction(async (manager) => {
-      const appointment = await manager.findOne(Appointment, {
-        where: { id: appointmentId },
-        relations: ['payment', 'slot'],
-        lock: { mode: 'pessimistic_write' }
-      });
+      // const appointment = await manager.findOne(Appointment, {
+      //   where: { id: appointmentId },
+      //   relations: ['payment', 'slot'],
+      //   lock: { mode: 'pessimistic_write' }
+      // });
+
+      const appointment = await manager
+        .createQueryBuilder(Appointment, 'appointment')
+        .leftJoinAndSelect('appointment.payment', 'payment')
+        .leftJoinAndSelect('appointment.slot', 'slot')
+        .where('appointment.id = :id', { id: appointmentId })
+        .setLock('pessimistic_write', undefined, ['appointment'])
+        .getOne();
+
 
       if (!appointment) {
         throw new NotFoundException('Appointment not found');
@@ -167,11 +183,19 @@ export class PaymentsService {
         lock: { mode: 'pessimistic_write' }
       });
 
+
+      console.log(payment, 'payment in payment service <<<<<');
+
       if (!payment) {
         throw new NotFoundException('Payment not found');
       }
 
-      if (appointment.status === AppointmentStatus.CONFIRMED && payment.status === PaymentStatus.SUCCEEDED) {
+      if (
+
+        (appointment.status === AppointmentStatus.CONFIRMED || appointment.status === AppointmentStatus.COMPLETED) &&
+        console.log(payment.status, 'Payment status here <<<<<') &&
+        payment.status === PaymentStatus.SUCCEEDED
+      ) {
         return { confirmed: true, appointmentId };
       }
 
@@ -179,7 +203,7 @@ export class PaymentsService {
         return { confirmed: false, reason: 'appointment-not-pending' };
       }
 
-      appointment.status = AppointmentStatus.CONFIRMED;
+      appointment.status = AppointmentStatus.COMPLETED;
       payment.status = PaymentStatus.SUCCEEDED;
       payment.stripePaymentIntentId = checkoutSession.payment_intent;
       payment.rawStripePayload = event as unknown as Record<string, unknown>;
@@ -214,6 +238,8 @@ export class PaymentsService {
         where: { id: appointment.slotId },
         lock: { mode: 'pessimistic_write' }
       } as any);
+
+      console.log(slot, 'Booked slot done >>>>>>>');
 
       if (slot) {
         slot.status = SlotStatus.BOOKED;

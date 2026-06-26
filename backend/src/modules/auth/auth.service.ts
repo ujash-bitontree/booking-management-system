@@ -153,7 +153,7 @@ export class AuthService {
 
   async getMe(userId: string) {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
-
+      console.log(user, 'User <<<<');
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -303,6 +303,7 @@ export class AuthService {
   }
 
   private toSafeUser(user: User): AuthUserResponse {
+    console.log(user, 'User Safe <<<<');
     return {
       id: user.id,
       email: user.email,

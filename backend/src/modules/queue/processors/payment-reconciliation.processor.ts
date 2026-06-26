@@ -26,7 +26,8 @@ export class PaymentReconciliationProcessor extends WorkerHost {
     const payment = await this.paymentsRepository.findOne({
       where: { id: job.data.paymentId }
     });
-
+    console.log(payment, 'Payment in processor ::::');
+    
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
@@ -42,6 +43,7 @@ export class PaymentReconciliationProcessor extends WorkerHost {
     const session = await this.stripeService.stripe.checkout.sessions.retrieve(
       payment.stripeCheckoutSessionId
     );
+    console.log(session, 'Session is here >>>>>>>');
 
     if (session.payment_status === 'paid') {
       await this.paymentsService.handleStripeCheckoutCompleted({

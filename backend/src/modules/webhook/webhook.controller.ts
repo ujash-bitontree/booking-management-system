@@ -15,6 +15,7 @@ export class WebhookController {
     @Req() request: StripeWebhookRequest,
     @Headers('stripe-signature') signature?: string
   ) {
+    console.log('WEBHOOK CONTROLLER HIT');
     return this.webhookService.handleStripeEvent(request.rawBody, signature);
   }
 }

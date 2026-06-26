@@ -44,6 +44,7 @@ export class StripeWebhookProcessor extends WorkerHost {
     await this.webhookEventsRepository.save(webhookEvent);
 
     const type = job.data.type;
+    console.log(`Processing Stripe webhook event: ${type} (ID: ${job.data.eventId})`);
     if (type === 'checkout.session.completed') {
       await this.paymentsService.handleStripeCheckoutCompleted(job.data.payload as any);
     } else if (type === 'checkout.session.expired' || type === 'payment_intent.payment_failed') {

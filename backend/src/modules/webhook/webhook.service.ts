@@ -12,9 +12,12 @@ export class WebhookService {
     private readonly stripeService: StripeService,
     private readonly config: ConfigService,
     @InjectQueue(STRIPE_WEBHOOK_QUEUE) private readonly stripeWebhookQueue: Queue
-  ) {}
+  ) { }
 
   async handleStripeEvent(rawBody: Buffer | undefined, signature?: string) {
+    console.log('SERVICE HIT');
+    console.log('SIGNATURE:', signature);
+    console.log('RAW BODY:', !!rawBody);
     if (!rawBody || !signature) {
       throw new BadRequestException('Invalid webhook payload');
     }
@@ -32,7 +35,7 @@ export class WebhookService {
       throw new BadRequestException('Stripe signature verification failed');
     }
 
-    await this.stripeWebhookQueue.add(
+    const stripeEventQueue = await this.stripeWebhookQueue.add(
       'stripe-event',
       {
         eventId: event.id,
@@ -45,6 +48,7 @@ export class WebhookService {
       }
     );
 
+    console.log(stripeEventQueue, 'Added to stripe webhook queue <<<<<');
     return {
       received: true,
       verified: true,
