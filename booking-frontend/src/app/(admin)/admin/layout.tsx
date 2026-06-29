@@ -2,7 +2,6 @@
 
 import { ProtectedRoute } from '@/src/components/layout/ProtectedRoute';
 import { Header } from '@/src/components/layout/Header';
-import { Sidebar } from '@/src/components/layout/Sidebar';
 
 export default function AdminLayout({
   children,
@@ -11,12 +10,9 @@ export default function AdminLayout({
 }) {
   return (
     <ProtectedRoute allowedRoles={['ADMIN']}>
-      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-        <Sidebar />
-        <div className="flex flex-col">
-          <Header />
-          <main className="flex-1 p-4 md:p-6">{children}</main>
-        </div>
+      <div className="min-h-screen w-full">
+        <Header />
+        <main className="p-4 md:p-6">{children}</main>
       </div>
     </ProtectedRoute>
   );
