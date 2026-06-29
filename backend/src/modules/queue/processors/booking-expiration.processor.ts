@@ -7,8 +7,6 @@ import { Appointment } from '../../appointments/entities/appointment.entity';
 import { Payment } from '../../payments/entities/payment.entity';
 import { AppointmentStatus } from '../../../common/enums/appointment-status.enum';
 import { PaymentStatus } from '../../../common/enums/payment-status.enum';
-import { EventsGateway } from '../../events/events.gateway';
-import { PatientProfile } from '../../patients/entities/patient-profile.entity';
 
 @Processor(BOOKING_EXPIRATION_QUEUE)
 @Injectable()
@@ -17,7 +15,6 @@ export class BookingExpirationProcessor extends WorkerHost {
 
   constructor(
     private readonly dataSource: DataSource,
-    private readonly eventsGateway: EventsGateway,
   ) {
     super();
   }
@@ -30,7 +27,8 @@ export class BookingExpirationProcessor extends WorkerHost {
           // relations: ['payment'],
           lock: { mode: 'pessimistic_write' }
         });
-        
+        console.log(appointment, 'Appointment in processor ::::');
+
         if (!appointment || appointment.status !== AppointmentStatus.PENDING_PAYMENT) {
           return { processed: false };
         }
@@ -39,12 +37,12 @@ export class BookingExpirationProcessor extends WorkerHost {
           return { processed: false };
         }
 
-        // Get the patient profile to find the user ID
-        const patientProfile = await manager.findOne(PatientProfile, {
-          where: { id: appointment.patientId },
-        }as any);
+        // // Get the patient profile to find the user ID
+        // const patientProfile = await manager.findOne(PatientProfile, {
+        //   where: { id: appointment.patientId },
+        // }as any);
 
-        const userId = patientProfile?.userId?.toString() || job.data.userId;
+        // const userId = patientProfile?.userId?.toString() || job.data.userId;
 
         appointment.status = AppointmentStatus.EXPIRED;
         await manager.save(appointment);
@@ -56,14 +54,6 @@ export class BookingExpirationProcessor extends WorkerHost {
             { status: PaymentStatus.CANCELLED }
           );
         }
-
-        this.logger.log(`Broadcasting expiration event for appointment ${appointment.id} to user ${userId}`);
-
-        this.eventsGateway.broadcastAppointmentExpired(
-          appointment.id,
-          userId,
-          AppointmentStatus.EXPIRED,
-        );
 
         return { processed: true, appointmentId: appointment.id };
       });

@@ -14,7 +14,6 @@ import { HealthModule } from './modules/health/health.module';
 import { SlotsModule } from './modules/slots/slots.module';
 import { UsersModule } from './modules/users/users.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
-import { EventsModule } from './modules/events/events.module';
 import { RolesGuard } from './common/guards/roles.guard';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { configFactory } from './config/config.factory';
@@ -60,7 +59,6 @@ import { configFactory } from './config/config.factory';
     SlotsModule,
     UsersModule,
     WebhookModule,
-    EventsModule
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

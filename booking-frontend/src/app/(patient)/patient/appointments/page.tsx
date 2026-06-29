@@ -5,7 +5,6 @@ import { Calendar } from 'lucide-react';
 import { useAppointments } from '@/src/hooks/useAppointments';
 import { useAuthStore } from '@/src/store/authStore';
 import { useStripe } from '@/src/hooks/useStripe';
-import { useSSE } from '@/src/hooks/useSSE';
 import { LoadingSpinner } from '@/src/components/ui/LoadingSpinner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
 import { AppointmentCard } from '@/src/components/appointments/AppointmentCard';
@@ -18,8 +17,6 @@ export default function PatientAppointmentsPage() {
   const { getMyAppointments, appointments, isLoading, cancelAppointment, createCheckoutSession } = useAppointments();
   const { redirectToCheckout } = useStripe();
 
-  // Connect to SSE for real-time updates
-  useSSE();
 
   useEffect(() => {
     if (user) {
