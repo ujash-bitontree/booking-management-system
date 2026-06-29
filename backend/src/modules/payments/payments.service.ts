@@ -213,7 +213,7 @@ export class PaymentsService {
       // Deduct from patient's wallet
       const patientToDeduct = await manager.findOne(PatientProfile, {
         where: { id: appointment.patientId }
-      }as any);
+      } as any);
       if (patientToDeduct && patientToDeduct.walletBalance > 0) {
         const deductionAmount = Math.min(payment.amount, patientToDeduct.walletBalance);
         patientToDeduct.walletBalance -= deductionAmount;
@@ -240,7 +240,7 @@ export class PaymentsService {
         if (otherAppointment.paymentId) {
           const otherPayment = await manager.findOne(Payment, {
             where: { id: otherAppointment.paymentId }
-          }as any);
+          } as any);
 
           console.log(otherPayment, 'Other payment data here <<<<<');
           console.log(otherPayment?.status, 'Other payment status <<<<<<')
@@ -257,7 +257,7 @@ export class PaymentsService {
               // Credit refund to patient's wallet
               const refundPatient = await manager.findOne(PatientProfile, {
                 where: { id: otherAppointment.patientId }
-              }as any);
+              } as any);
               if (refundPatient) {
                 refundPatient.walletBalance = (refundPatient.walletBalance || 0) + otherPayment.amount;
                 await manager.save(refundPatient);
