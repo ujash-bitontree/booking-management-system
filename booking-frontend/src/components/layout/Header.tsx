@@ -70,7 +70,7 @@ export function Header() {
           {user ? (
             <>
               <Avatar className="h-8 w-8 border border-slate-200">
-                <AvatarImage src="/avatars/01.png" />
+                <AvatarImage src="https://static.vecteezy.com/system/resources/thumbnails/034/342/056/small/doctor-with-stethoscope-confident-young-man-in-white-coat-looking-at-camera-and-smiling-while-standing-against-blue-background-portrait-of-confident-young-medical-doctor-ai-generated-free-photo.jpg" />
                 <AvatarFallback className="text-xs">{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <Button variant="outline" onClick={handleLogout} className="rounded-full px-4 text-sm">

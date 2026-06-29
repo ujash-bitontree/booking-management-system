@@ -12,6 +12,7 @@ interface AppointmentState {
   setError: (error: string | null) => void;
   addAppointment: (appointment: Appointment) => void;
   updateAppointment: (id: string, appointment: Partial<Appointment>) => void;
+  updateAppointmentStatus: (id: string, status: string) => void;
   reset: () => void;
 }
 
@@ -39,6 +40,17 @@ export const useAppointmentStore = create<AppointmentState>((set: any) => ({
       selectedAppointment:
         state.selectedAppointment?.id === id
           ? { ...state.selectedAppointment, ...appointment }
+          : state.selectedAppointment,
+    })),
+
+  updateAppointmentStatus: (id: any, status: any) =>
+    set((state: any) => ({
+      appointments: state.appointments.map((a: any) =>
+        a.id === id ? { ...a, status } : a
+      ),
+      selectedAppointment:
+        state.selectedAppointment?.id === id
+          ? { ...state.selectedAppointment, status }
           : state.selectedAppointment,
     })),
 
