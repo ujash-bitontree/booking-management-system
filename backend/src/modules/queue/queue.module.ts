@@ -13,11 +13,13 @@ import { WebhookEvent } from '../webhook/entities/webhook-event.entity';
 import { StripeModule } from '../../infrastructure/stripe/stripe.module';
 import { Payment } from '../payments/entities/payment.entity';
 import { PaymentsModule } from '../payments/payments.module';
+import { EventsModule } from '../events/events.module';
 
 @Module({
   imports: [
     StripeModule,
     PaymentsModule,
+    EventsModule,
     TypeOrmModule.forFeature([WebhookEvent, Payment]),
     BullModule.registerQueue(
       { name: BOOKING_EXPIRATION_QUEUE },

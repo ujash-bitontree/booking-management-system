@@ -126,7 +126,7 @@ export class AppointmentsService {
 
     const addToexpiredBQueue = await this.bookingExpirationQueue.add(
       'expire-appointment',
-      { appointmentId: appointment.id },
+      { appointmentId: appointment.id, userId: patientId },
       {
         delay,
         removeOnComplete: true,
