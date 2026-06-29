@@ -45,8 +45,13 @@ export class PatientsController {
 
   @Get('appointments')
   @Roles(Role.PATIENT)
-  bookingHistory(@Req() request: Request & { user: { sub: string } }) {
-    return this.patientsService.listBookingHistory(request.user.sub);
+  bookingHistory(
+    @Req() request: Request & { user: { sub: string } },
+    @Query() query: ListPatientsQueryDto
+  ) {
+    const page = query.page ? parseInt(query.page as any) : 1;
+    const limit = query.limit ? parseInt(query.limit as any) : 5;
+    return this.patientsService.listBookingHistory(request.user.sub, page, limit);
   }
 
   @Post('appointments/:id/cancel')

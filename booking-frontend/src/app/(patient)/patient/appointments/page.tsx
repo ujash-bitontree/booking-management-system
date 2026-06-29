@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { Calendar } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppointments } from '@/src/hooks/useAppointments';
 import { useAuthStore } from '@/src/store/authStore';
 import { useStripe } from '@/src/hooks/useStripe';
@@ -14,15 +14,19 @@ import { EmptyState } from '@/src/components/ui/EmptyState';
 
 export default function PatientAppointmentsPage() {
   const user = useAuthStore((state: any) => state.user);
-  const { getMyAppointments, appointments, isLoading, cancelAppointment, createCheckoutSession } = useAppointments();
+  const { getMyAppointments, appointments, isLoading, pagination, cancelAppointment, createCheckoutSession } = useAppointments();
   const { redirectToCheckout } = useStripe();
-
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (user) {
-      getMyAppointments();
+      getMyAppointments(currentPage);
     }
-  }, [user, getMyAppointments]);
+  }, [user, currentPage, getMyAppointments]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
 
   const handlePay = async (appointmentId: string) => {
     try {
@@ -34,12 +38,14 @@ export default function PatientAppointmentsPage() {
 
   const handleCancel = async (appointmentId: string) => {
     await cancelAppointment(appointmentId);
-    getMyAppointments();
+    getMyAppointments(currentPage);
   };
 
   if (isLoading) {
     return <LoadingSpinner text="Loading appointments..." />;
   }
+
+  const { total, totalPages } = pagination;
 
   return (
     <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 sm:py-8">
@@ -69,17 +75,51 @@ export default function PatientAppointmentsPage() {
               />
             </div>
           ) : (
-            <div className="grid gap-3 sm:gap-4">
-              {appointments.map((appointment: any) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onPay={handlePay}
-                  onCancel={handleCancel}
-                  showActions={true}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid gap-3 sm:gap-4">
+                {appointments.map((appointment: any) => (
+                  <AppointmentCard
+                    key={appointment.id}
+                    appointment={appointment}
+                    onPay={handlePay}
+                    onCancel={handleCancel}
+                    showActions={true}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {((currentPage - 1) * 5) + 1} to {Math.min(currentPage * 5, total)} of {total} appointments
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage >= totalPages}
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>

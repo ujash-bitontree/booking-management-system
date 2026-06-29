@@ -18,6 +18,7 @@ export const useAppointments = () => {
     addAppointment,
     updateAppointment,
     reset,
+    pagination,
   } = useAppointmentStore();
 
   // Create appointment
@@ -43,12 +44,18 @@ export const useAppointments = () => {
   );
 
   // Get patient appointments
-  const getMyAppointments = useCallback(async () => {
+  const getMyAppointments = useCallback(async (page: number = 1, limit: number = 5) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get<PaginatedResponse<Appointment>>('/patients/appointments');
+      const response: any = await api.get<PaginatedResponse<Appointment>>('/patients/appointments', { params: { page, limit } });
       setAppointments(response.data.items);
+      useAppointmentStore.getState().setPagination({
+        page: response.data.page || page,
+        limit: response.data.limit || limit,
+        total: response.data.total || 0,
+        totalPages: response.data.totalPages || 0,
+      });
       return response.data;
     } catch (error) {
       setError('Failed to fetch appointments');
@@ -154,6 +161,7 @@ export const useAppointments = () => {
     selectedAppointment,
     isLoading,
     error,
+    pagination,
     createAppointment,
     getMyAppointments,
     getDoctorAppointments,

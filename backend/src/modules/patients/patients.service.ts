@@ -77,7 +77,7 @@ export class PatientsService {
     });
   }
 
-  async listBookingHistory(userId: string) {
+  async listBookingHistory(userId: string, page: number = 1, limit: number = 5) {
     const patient = await this.patientProfilesRepository.findOne({
       where: { userId }
     }as any);
@@ -86,15 +86,22 @@ export class PatientsService {
       throw new NotFoundException('Patient profile not found');
     }
 
-    const appointments = await this.appointmentsRepository.find({
+    const skip = (page - 1) * limit;
+
+    const [appointments, total] = await this.appointmentsRepository.findAndCount({
       where: { patientId: patient.id },
       relations: ['doctor', 'slot', 'payment'],
-      order: { scheduledAt: 'DESC' }
+      order: { scheduledAt: 'DESC' },
+      take: limit,
+      skip
     }as any);
 
     return {
       items: appointments,
-      count: appointments.length
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
     };
   }
 
