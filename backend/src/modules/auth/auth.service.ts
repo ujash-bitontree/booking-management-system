@@ -49,7 +49,7 @@ export class AuthService {
     private readonly patientProfilesRepository: Repository<PatientProfile>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService
-  ) {}
+  ) { }
 
   async register(dto: RegisterDto) {
     const existingUser = await this.usersRepository.findOne({
@@ -111,7 +111,7 @@ export class AuthService {
 
     const storedToken = await this.refreshTokensRepository.findOne({
       where: { tokenHash, userId: payload.sub }
-    }as any);
+    } as any);
 
     if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
       throw new UnauthorizedException('Refresh token is not valid');
@@ -138,22 +138,28 @@ export class AuthService {
   }
 
   async logout(dto: RefreshTokenDto) {
-    const tokenHash = this.hashToken(dto.refreshToken);
-    const storedToken = await this.refreshTokensRepository.findOne({
-      where: { tokenHash }
-    });
+    try {
+      const tokenHash = this.hashToken(dto.refreshToken);
+      const storedToken = await this.refreshTokensRepository.findOne({
+        where: { tokenHash }
+      });
+      console.log(storedToken, 'Stored token <<<<');
+      if (storedToken && !storedToken.revokedAt) {
+        storedToken.revokedAt = new Date();
+        await this.refreshTokensRepository.save(storedToken);
+      }
 
-    if (storedToken && !storedToken.revokedAt) {
-      storedToken.revokedAt = new Date();
-      await this.refreshTokensRepository.save(storedToken);
+      return { message: 'logged out' };
+    } catch (error) {
+      console.log(error, 'Error while logout <<<')
+      return error;
     }
 
-    return { message: 'logged out' };
   }
 
   async getMe(userId: string) {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
-      console.log(user, 'User <<<<');
+    console.log(user, 'User <<<<');
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -177,7 +183,7 @@ export class AuthService {
       tokenHash,
       expiresAt,
       usedAt: null
-    }as any);
+    } as any);
 
     await this.passwordResetTokensRepository.save(resetToken);
 
@@ -199,7 +205,7 @@ export class AuthService {
 
     const user = await this.usersRepository.findOne({
       where: { id: storedToken.userId }
-    }as any);
+    } as any);
 
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Reset token is not valid');
@@ -239,7 +245,7 @@ export class AuthService {
         userId,
         fullName: dto.fullName,
         phoneNumber: dto.phoneNumber ?? null
-      }as any);
+      } as any);
       await this.patientProfilesRepository.save(profile);
     }
   }
@@ -275,7 +281,7 @@ export class AuthService {
       revokedAt: null,
       userAgent: null,
       ipAddress: null
-    }as any);
+    } as any);
 
     await this.refreshTokensRepository.save(token);
   }

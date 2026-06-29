@@ -53,3 +53,23 @@ export const hasRole = (role: string | string[]): boolean => {
   if (Array.isArray(role)) return role.includes(user.role);
   return user.role === role;
 };
+
+// Logout from server
+export const logout = async (): Promise<void> => {
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+    }
+  }
+  clearAuth();
+};

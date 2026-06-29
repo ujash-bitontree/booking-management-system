@@ -4,13 +4,18 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Repository, In } from 'typeorm';
 import { DoctorProfile } from './entities/doctor-profile.entity';
 import { User } from '../users/entities/user.entity';
+import { Appointment } from '../appointments/entities/appointment.entity';
+import { Payment } from '../payments/entities/payment.entity';
 import { UpdateDoctorProfileDto } from './dto/update-doctor-profile.dto';
 import { ListDoctorsQueryDto } from './dto/list-doctors-query.dto';
 import { Role } from '../../common/enums/role.enum';
+import { AppointmentStatus } from '../../common/enums/appointment-status.enum';
+import { PaymentStatus } from '../../common/enums/payment-status.enum';
 import { AvailabilitySlot, SlotStatus } from '../slots/entities/availability-slot.entity';
+import { PatientProfile } from '../patients/entities/patient-profile.entity';
 
 @Injectable()
 export class DoctorsService {
@@ -21,6 +26,12 @@ export class DoctorsService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(AvailabilitySlot)
     private readonly slotsRepository: Repository<AvailabilitySlot>,
+    @InjectRepository(Appointment)
+    private readonly appointmentsRepository: Repository<Appointment>,
+    @InjectRepository(Payment)
+    private readonly paymentsRepository: Repository<Payment>,
+    @InjectRepository(PatientProfile)
+    private readonly patientProfilesRepository: Repository<PatientProfile>,
     private readonly dataSource: DataSource
   ) {}
 
@@ -124,6 +135,61 @@ export class DoctorsService {
     }as any);
 
     return { items: slots, count: slots.length };
+  }
+
+  async listConfirmedAppointments(userId: string) {
+    const doctor = await this.doctorProfilesRepository.findOne({
+      where: { userId: Number(userId) } as any
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Doctor profile not found');
+    }
+
+    const appointments = await this.appointmentsRepository.find({
+      where: {
+        doctorId: doctor.id,
+        status: In([AppointmentStatus.CONFIRMED, AppointmentStatus.COMPLETED])
+      },
+      relations: ['payment', 'patient', 'slot'],
+      order: { scheduledAt: 'ASC' }
+    }as any);
+
+    const confirmedAppointments = await Promise.all(
+      appointments.map(async (appointment) => {
+        let patientName = 'Unknown';
+        let patientEmail = '';
+
+        if (appointment.patientId) {
+          const patient = await this.dataSource
+            .getRepository(PatientProfile)
+            .findOne({
+              where: { id: appointment.patientId } as any
+            });
+
+          if (patient) {
+            const patientUser = await this.usersRepository.findOne({
+              where: { id: patient.userId }
+            }as any);
+            patientName = patient?.fullName || patientUser?.email || 'Unknown';
+            patientEmail = patientUser?.email || '';
+          }
+        }
+
+        return {
+          id: appointment.id,
+          scheduledAt: appointment.scheduledAt,
+          status: appointment.status,
+          patientName,
+          patientEmail,
+          slotTime: appointment.slot?.startTime,
+          paymentStatus: appointment.payment?.status,
+          amount: appointment.payment?.amount
+        };
+      })  
+    );
+
+    return { items: confirmedAppointments, count: confirmedAppointments.length };
   }
 
   private assignDoctorPatch(doctor: DoctorProfile, dto: UpdateDoctorProfileDto) {

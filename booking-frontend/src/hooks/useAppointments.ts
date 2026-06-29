@@ -58,6 +58,22 @@ export const useAppointments = () => {
     }
   }, [setAppointments, setLoading, setError]);
 
+  // Get doctor appointments - confirmed appointments only
+  const getDoctorAppointments = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get<{ items: any[]; count: number }>('/doctors/me/appointments');
+      setAppointments(response.data.items);
+      return response.data;
+    } catch (error) {
+      setError('Failed to fetch doctor appointments');
+      toast.error('Failed to fetch doctor appointments');
+    } finally {
+      setLoading(false);
+    }
+  }, [setAppointments, setLoading, setError]);
+
   // Get appointment by ID
   // Avoid re-fetching the full list on every call if it's already present in store.
   const getAppointment = useCallback(
@@ -140,6 +156,7 @@ export const useAppointments = () => {
     error,
     createAppointment,
     getMyAppointments,
+    getDoctorAppointments,
     getAppointment,
     cancelAppointment,
     createCheckoutSession,

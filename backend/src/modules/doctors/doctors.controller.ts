@@ -29,6 +29,12 @@ export class DoctorsController {
     return this.doctorsService.getMyProfile(request.user.sub);
   }
 
+  @Get('me/appointments')
+  @Roles(Role.DOCTOR)
+  getMyAppointments(@Req() request: Request & { user: { sub: string } }) {
+    return this.doctorsService.listConfirmedAppointments(request.user.sub);
+  }
+
   @Get(':id')
   @Public()
   getDoctor(@Param('id') doctorId: string) {

@@ -8,17 +8,27 @@ import { LoadingSpinner } from '@/src/components/ui/LoadingSpinner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/src/components/ui/table';
 import { Badge } from '@/src/components/ui/badge';
-import { AppointmentCard } from '@/src/components/appointments/AppointmentCard';
 
 export default function DoctorAppointmentsPage() {
   const user = useAuthStore((state: any) => state.user);
-  const { getMyAppointments, appointments, isLoading } = useAppointments();
+  const { getDoctorAppointments, appointments, isLoading } = useAppointments();
 
   useEffect(() => {
     if (user) {
-      getMyAppointments();
+      getDoctorAppointments();
     }
-  }, [user, getMyAppointments]);
+  }, [user, getDoctorAppointments]);
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case 'CONFIRMED':
+        return 'default';
+      case 'COMPLETED':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
 
   if (isLoading) {
     return <LoadingSpinner text="Loading appointments..." />;
@@ -39,15 +49,47 @@ export default function DoctorAppointmentsPage() {
               No appointments found
             </div>
           ) : (
-            <div className="grid gap-4">
-              {appointments.map((appointment) => (
-                <AppointmentCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  showActions={false}
-                />
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Patient</TableHead>
+                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Payment Status</TableHead>
+                  <TableHead>Payment</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {appointments.map((appointment: any) => (
+                  <TableRow key={appointment.id}>
+                    <TableCell className="font-medium">
+                      {appointment.patientName || 'Unknown'}
+                      <div className="text-xs text-muted-foreground">
+                        {appointment.patientEmail || ''}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {appointment.slotTime
+                        ? format(new Date(appointment.slotTime), 'MMM dd, yyyy HH:mm')
+                        : appointment.scheduledAt
+                          ? format(new Date(appointment.scheduledAt), 'MMM dd, yyyy HH:mm')
+                          : '-'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(appointment.status)}>
+                        {appointment.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={appointment.paymentStatus === 'SUCCEEDED' ? 'default' : 'outline'}>
+                        {appointment.paymentStatus === 'SUCCEEDED'
+                          ? `$${(appointment.amount || 0) / 100}`
+                          : appointment.paymentStatus || 'Pending'}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
