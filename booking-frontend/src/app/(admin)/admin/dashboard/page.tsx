@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        {stats?.totalRevenue && (
+        {/* {stats?.totalRevenue && (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        )} */}
       </div>
     </div>
   );
