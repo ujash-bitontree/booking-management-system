@@ -21,12 +21,18 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen flex flex-col bg-slate-50/30">
             <Header />
             <main className="flex-1">{children}</main>
           </div>
 
-          <Toaster />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: 'rounded-xl border border-slate-200 shadow-lg',
+              duration: 4000,
+            }}
+          />
         </Providers>
       </body>
     </html>

@@ -13,6 +13,13 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    // Ignore @tailwindcss directive in CSS files
+    files: ["**/*.css"],
+    rules: {
+      "css/no-unknown-at-rules": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
