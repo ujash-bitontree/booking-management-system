@@ -144,7 +144,7 @@ export default function DoctorDetailPage() {
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>About Dr. {selectedDoctor.fullName.split(' ')[1]}</CardTitle>
+              <CardTitle>About Dr. {selectedDoctor.fullName.split(' ').join(' ')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">

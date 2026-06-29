@@ -37,6 +37,12 @@ export class PatientsController {
     return this.patientsService.deleteMyProfile(request.user.sub);
   }
 
+  @Get('me/wallet')
+  @Roles(Role.PATIENT)
+  getMyWallet(@Req() request: Request & { user: { sub: string } }) {
+    return this.patientsService.getWalletBalance(request.user.sub);
+  }
+
   @Get('doctors')
   @Public()
   searchDoctors(@Query() query: ListDoctorsQueryDto) {

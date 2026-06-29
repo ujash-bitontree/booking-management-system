@@ -167,7 +167,20 @@ export class PatientsService {
       email: patient.user.email,
       fullName: patient.fullName,
       phoneNumber: patient.phoneNumber,
+      walletBalance: patient.walletBalance,
       isActive: patient.user.isActive
     };
+  }
+
+  async getWalletBalance(userId: string) {
+    const patient = await this.patientProfilesRepository.findOne({
+      where: { userId }
+    } as any);
+
+    if (!patient) {
+      throw new NotFoundException('Patient profile not found');
+    }
+
+    return { walletBalance: patient.walletBalance };
   }
 }

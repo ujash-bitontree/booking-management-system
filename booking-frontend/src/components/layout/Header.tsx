@@ -1,20 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, Stethoscope, LogOut, User, Calendar, Users, Clock, Shield } from 'lucide-react';
+import { Menu, X, Stethoscope, LogOut, User, Calendar, Users, Clock, Shield, Wallet } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { useAuthStore } from '@/src/store/authStore';
 import { clearAuth } from '@/src/lib/auth';
 import { toast } from 'react-hot-toast';
+import { useWalletBalance } from '@/src/hooks/useWalletBalance';
 
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((state: any) => state.user);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { walletBalance, fetchWalletBalance } = useWalletBalance();
+
+  useEffect(() => {
+    if (user?.role === 'PATIENT') {
+      fetchWalletBalance();
+    }
+  }, [user, fetchWalletBalance]);
 
   const handleLogout = () => {
     clearAuth();
@@ -69,6 +77,14 @@ export function Header() {
         <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
+              {user?.role === 'PATIENT' && (
+                <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 border border-emerald-200">
+                  <Wallet className="h-3.5 w-3.5 text-emerald-600" />
+                  <span className="text-sm font-medium text-emerald-700">
+                    ${walletBalance.toFixed(2)}
+                  </span>
+                </div>
+              )}
               <Avatar className="h-8 w-8 border border-slate-200">
                 <AvatarImage src="https://static.vecteezy.com/system/resources/thumbnails/034/342/056/small/doctor-with-stethoscope-confident-young-man-in-white-coat-looking-at-camera-and-smiling-while-standing-against-blue-background-portrait-of-confident-young-medical-doctor-ai-generated-free-photo.jpg" />
                 <AvatarFallback className="text-xs">{user?.email?.charAt(0).toUpperCase()}</AvatarFallback>
