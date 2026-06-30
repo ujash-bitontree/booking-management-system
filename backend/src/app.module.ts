@@ -44,7 +44,9 @@ import { configFactory } from './config/config.factory';
       useFactory: (config: ConfigService) => ({
         connection: {
           host: config.getOrThrow<string>('redis.host'),
-          port: config.getOrThrow<number>('redis.port')
+          port: config.getOrThrow<number>('redis.port'),
+          password: config.getOrThrow<string>('redis.password'),
+          tls: {}, // Required for Upstash
         }
       })
     }),
@@ -65,4 +67,4 @@ import { configFactory } from './config/config.factory';
     { provide: APP_GUARD, useClass: RolesGuard }
   ]
 })
-export class AppModule {}
+export class AppModule { }

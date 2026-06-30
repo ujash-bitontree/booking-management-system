@@ -13,7 +13,9 @@ export const configFactory = () => ({
   },
   redis: {
     host: process.env.REDIS_HOST ?? 'localhost',
-    port: Number(process.env.REDIS_PORT ?? 6379)
+    port: Number(process.env.REDIS_PORT ?? 6379),
+    password: process.env.REDIS_PASSWORD ?? '',
+
   },
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET ?? 'change-me',
